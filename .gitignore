@@ -2,6 +2,12 @@
 *.pdf
 planchas_stickers.pdf
 
+# Carpetas de la WebApp
+uploads/
+logos_especiales/
+output/
+logos_especiales_mapeo.json
+
 # Carpeta de QRs (opcional, dependiendo del proyecto)
 qrs/
 
@@ -32,6 +38,12 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+instance/
+.pytest_cache/
+
+# Flask
+instance/
+.webassets-cache
 
 # IDEs
 .vscode/
@@ -43,3 +55,7 @@ wheels/
 
 # Logs
 *.log
+
+# Node
+node_modules/
+package-lock.json
