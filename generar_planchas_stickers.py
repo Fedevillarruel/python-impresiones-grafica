@@ -2,10 +2,19 @@
 # -*- coding: utf-8 -*-
 """
 Script para generación de planchas de stickers para llaveros
-Formato: A3 (29.7cm x 42cm)
+Formato: A3 (29.7cm x 42cm) a 300 DPI
 Compatible con Adobe Illustrator para impresión profesional
+
+ESPECIFICACIONES:
+- Márgenes de seguridad: 1.5cm en todos los lados
+- ID fuera de los stickers (separado 0.8cm del primer círculo)
+- Troqueles en Magenta (RGB: 1,0,1) de 0.5pts
+- Logo: 2.5cm, QR: 2.1cm, Troquel: 2.6cm
+- 32 filas por página (2 columnas × 16 filas)
+
 Autor: Desarrollador Senior Python
-Fecha: 2026-01-29
+Fecha: 2026-01-30
+Versión: 2.0
 """
 
 import os
@@ -38,12 +47,15 @@ class GeneradorPlanchasStickers:
     FILAS_POR_COLUMNA = 16
     FILAS_TOTALES_POR_HOJA = COLUMNAS * FILAS_POR_COLUMNA  # 32 filas
     
-    # Márgenes y espaciado
-    MARGEN_SUPERIOR = 2 * cm
-    MARGEN_IZQUIERDO = 2 * cm
+    # Márgenes y espaciado (actualizados para seguridad de impresión)
+    MARGEN_SUPERIOR = 1.5 * cm
+    MARGEN_INFERIOR = 1.5 * cm
+    MARGEN_IZQUIERDO = 1.5 * cm
+    MARGEN_DERECHO = 1.5 * cm
     ESPACIO_ENTRE_ELEMENTOS = 0.3 * cm
     ESPACIO_ENTRE_FILAS = 0.5 * cm
-    ESPACIO_ID = 1.2 * cm  # Espacio para el número de ID
+    ANCHO_ZONA_ID = 1.5 * cm  # Espacio reservado para el número ID (fuera de stickers)
+    SEPARACION_ID_STICKER = 0.8 * cm  # Separación mínima entre ID y primer círculo
     
     def __init__(self, carpeta_qrs="qrs", archivo_logo="logo.png", 
                  archivo_salida="planchas_stickers.pdf"):
@@ -140,17 +152,19 @@ class GeneradorPlanchasStickers:
     
     def _dibujar_texto_id(self, c, numero_id, x, y):
         """
-        Dibuja el número de ID a la izquierda de la fila
+        Dibuja el número de ID a la izquierda de la fila (fuera de los stickers)
         
         Args:
             c: Canvas de reportlab
             numero_id: Número identificador
-            x: Coordenada X
-            y: Coordenada Y
+            x: Coordenada X (posición del texto)
+            y: Coordenada Y (centro vertical de la fila)
         """
-        c.setFont("Helvetica-Bold", 8)
+        c.setFont("Helvetica-Bold", 10)
         c.setFillColorRGB(0, 0, 0)  # Negro
-        c.drawString(x, y, str(numero_id))
+        # Alinear verticalmente el texto con el centro de la fila
+        # drawString dibuja desde la baseline, ajustamos para centrar
+        c.drawString(x, y - 3, str(numero_id))
     
     def _calcular_posicion_fila(self, indice_fila_global):
         """
@@ -167,13 +181,14 @@ class GeneradorPlanchasStickers:
         # Fila dentro de la columna (0-15)
         fila_en_columna = indice_fila_global % self.FILAS_POR_COLUMNA
         
-        # Calcular ancho disponible por columna
-        ancho_columna = (self.ANCHO_PAGINA - 2 * self.MARGEN_IZQUIERDO) / self.COLUMNAS
+        # Calcular ancho disponible por columna (descontando márgenes izquierdo y derecho)
+        ancho_disponible = self.ANCHO_PAGINA - self.MARGEN_IZQUIERDO - self.MARGEN_DERECHO
+        ancho_columna = ancho_disponible / self.COLUMNAS
         
-        # Posición X inicial de la columna
+        # Posición X inicial de la columna (incluye margen izquierdo + zona para ID)
         x_columna = self.MARGEN_IZQUIERDO + (columna * ancho_columna)
         
-        # Posición Y (desde arriba hacia abajo)
+        # Posición Y (desde arriba hacia abajo, con margen superior)
         altura_fila = self.DIAMETRO_TROQUEL + self.ESPACIO_ENTRE_FILAS
         y_centro = (self.ALTO_PAGINA - self.MARGEN_SUPERIOR - 
                    (fila_en_columna * altura_fila) - (self.DIAMETRO_TROQUEL / 2))
@@ -184,7 +199,8 @@ class GeneradorPlanchasStickers:
         """
         Dibuja una fila completa de stickers
         
-        Estructura: [ID] [Logo] [Logo] [QR] [QR]
+        Estructura: [ID] (espacio) [Logo] [Logo] [QR] [QR]
+        El ID está completamente fuera de los círculos de corte
         
         Args:
             c: Canvas de reportlab
@@ -194,11 +210,12 @@ class GeneradorPlanchasStickers:
         """
         x_inicio, y_centro = self._calcular_posicion_fila(indice_fila)
         
-        # Dibujar número de ID
-        self._dibujar_texto_id(c, numero_id, x_inicio, y_centro - 3)
+        # Dibujar número de ID a la izquierda (FUERA de los stickers)
+        x_id = x_inicio + 0.2 * cm  # Pequeño margen desde el borde de la columna
+        self._dibujar_texto_id(c, numero_id, x_id, y_centro)
         
-        # Posición X actual (después del ID)
-        x_actual = x_inicio + self.ESPACIO_ID
+        # Posición X donde comienzan los stickers (después del ID + separación)
+        x_actual = x_inicio + self.ANCHO_ZONA_ID + self.SEPARACION_ID_STICKER
         
         # 1. Primer Logo con troquel
         self._dibujar_circulo_troquel(c, x_actual, y_centro)

@@ -2,10 +2,14 @@
 
 Sistema automatizado para generar planchas de impresión profesional en formato A3 compatibles con Adobe Illustrator.
 
+**Versión**: 2.0 | **Última actualización**: 30/01/2026
+
 ## 📋 Características
 
-- ✅ Formato A3 (29.7cm x 42cm)
+- ✅ Formato A3 (29.7cm x 42cm) a 300 DPI
 - ✅ Medidas precisas en centímetros
+- ✅ ID fuera de stickers (separado 0.8cm mínimo)
+- ✅ Márgenes de seguridad de 1.5cm en los 4 lados
 - ✅ Líneas de troquel en Magenta (RGB: 1, 0, 1)
 - ✅ Paginación automática
 - ✅ Ordenamiento numérico automático de QRs
@@ -28,11 +32,14 @@ Sistema automatizado para generar planchas de impresión profesional en formato 
 
 ### Estructura de cada Fila
 ```
-[ID] [Logo] [Logo] [QR] [QR]
+[ID] (espacio 0.8cm) [Logo] [Logo] [QR] [QR]
+ ↓                     ↓      ↓     ↓    ↓
+NNN                   2.5cm  2.5cm 2.1cm 2.1cm
+(fuera)              (troquel 2.6cm cada uno)
 ```
-- 1 número identificador (NNN)
-- 2 stickers de logo idénticos
-- 2 stickers de QR idénticos (único por fila)
+- 1 número identificador (NNN) **fuera** de los círculos de corte
+- 2 stickers de logo idénticos (centrados en troqueles)
+- 2 stickers de QR idénticos (único por fila, centrados en troqueles)
 
 ## 📦 Requisitos
 
